@@ -102,9 +102,3 @@ python app.py
 **Subral Jaiswal**
 💼 GitHub: [@Subral](https://github.com/subral)
 📧 Email: [subraljaiswal6@gmail.com](subraljaiswal6@gmail.com)
-
----
-
-## 🪶 License
-
-This project is licensed under the [MIT License](LICENSE).
