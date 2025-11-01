@@ -69,14 +69,6 @@ Start the app with:
 python app.py
 ```
 
-Then open your browser at:
-
-```
-http://localhost:5000
-```
-
----
-
 ## 🧠 How It Works
 
 1. **User Query:** The user submits a question or prompt.
@@ -108,8 +100,8 @@ http://localhost:5000
 ## 🧑‍💻 Author
 
 **Subral Jaiswal**
-💼 GitHub: [@yourusername](https://github.com/subral)
-📧 Email: [your.email@example.com](subraljaiswal6@gmail.com)
+💼 GitHub: [@Subral](https://github.com/subral)
+📧 Email: [subraljaiswal6@gmail.com](subraljaiswal6@gmail.com)
 
 ---
 
