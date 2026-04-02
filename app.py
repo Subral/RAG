@@ -20,7 +20,13 @@ from pydantic import BaseModel
 import pandas as pd
 import uuid
 from fastapi import UploadFile, File, Form
+from functools import lru_cache
 
+DEBUG = os.getenv("DEBUG", "false").lower() == "true"
+
+def dlog(*args):
+    if DEBUG:
+        print(*args, flush=True)
 
 app = FastAPI()
 
@@ -35,25 +41,23 @@ app.add_middleware(
 class QueryResponse(BaseModel):
     answer: str
 
-PDF_FILES = [
-    r"assests\SF_RCM_Admin.pdf",
-    r"assests\cat.txt",
-    r"assests\cat-facts.txt",
-]
 
 EMBEDDING_MODEL = "qwen3-embedding:4b"
-LANGUAGE_MODEL = "deepseek-r1:32b"
+
+LANGUAGE_MODEL = "qwen2.5-coder:7b"
+CODE_MODEL = "qwen2.5:14b"   
+NARRATE_MODEL = "qwen2.5:14b"
 
 MAX_CHARS_PER_CHUNK = 300
 EMBED_BATCH_SIZE = 16
 TABULAR_EXTENSIONS = {".csv", ".xlsx", ".xls"}
+
 
 def is_tabular(path: str) -> bool:
     ext = Path(path).suffix.lower()
     result = ext in TABULAR_EXTENSIONS
     print(f"[DEBUG][is_tabular] path='{path}' | ext='{ext}' | is_tabular={result}")
     return result
-
 
 def build_schema_context(df: pd.DataFrame) -> str:
     print(f"[DEBUG][build_schema_context] Building schema for df with shape={df.shape}")
@@ -94,7 +98,7 @@ def load_dataframe(path: str) -> pd.DataFrame:
 
 
 
-SANDBOX_TIMEOUT = 10  # seconds
+SANDBOX_TIMEOUT = 10  
 
 _SANDBOX_WRAPPER = """
 import pandas as pd
@@ -111,6 +115,10 @@ try:
         out = result.to_dict(orient="records")
     elif isinstance(result, pd.Series):
         out = result.to_dict()
+    elif isinstance(result, tuple):          
+        out = list(result)
+    elif hasattr(result, 'item'):            # numpy scalar
+        out = result.item()
     else:
         out = result
     print(json.dumps({{"ok": True, "result": out}}))
@@ -189,26 +197,29 @@ def generate_pandas_code(
     if previous_error:
         error_block = f"\nYour previous attempt failed with this error:\n{previous_error}\nFix it.\n"
 
-    prompt = f"""You are a pandas code generator. Write Python pandas code to answer the user's question.
+    prompt = f"""You are a pandas code generator.
 
-RULES:
-1. The dataframe is already loaded as `df`. Do NOT reload it.
-2. Assign your final answer to a variable called `result`.
-3. `result` must be a scalar, list, dict, pd.Series, or pd.DataFrame.
-4. Do NOT use print(). Do NOT import anything except pandas (already imported).
-5. Do NOT use os, sys, subprocess, open(), or any file operations.
-6. Write only the code. No explanation, no markdown, no ```python fences.
+CRITICAL: The dataframe columns are EXACTLY as listed in the schema below.
+Do NOT guess or invent column names. Use only what is shown.
 
 Schema:
 {schema_context}
-{error_block}
-User question: {query}
+
+Rules:
+1. df is already loaded. Do NOT reload it.
+2. Assign final answer to `result`.
+3. No imports, no print(), no file operations.
+4. Code only — no explanation, no markdown fences.
+
+{"Previous attempt failed: " + previous_error if previous_error else ""}
+
+Question: {query}
 
 Code:"""
 
-    print(f"[DEBUG][generate_pandas_code] Calling LLM (model={LANGUAGE_MODEL})...")
+    print(f"[DEBUG][generate_pandas_code] Calling LLM (model={CODE_MODEL})...")
     response = ollama.chat(
-        model=LANGUAGE_MODEL,
+        model=CODE_MODEL,
         messages=[{"role": "user", "content": prompt}],
     )
     raw = response["message"]["content"].strip()
@@ -291,9 +302,9 @@ def narrate_result(query: str, result_json: str) -> str:
 
     Answer:"""
 
-    print(f"[DEBUG][narrate_result] Calling LLM for narration (model={LANGUAGE_MODEL})...")
+    print(f"[DEBUG][narrate_result] Calling LLM for narration (model={NARRATE_MODEL})...")
     response = ollama.chat(
-        model=LANGUAGE_MODEL,
+        model=NARRATE_MODEL,
         messages=[{"role": "user", "content": prompt}],
     )
     answer = response["message"]["content"].strip()
@@ -536,7 +547,7 @@ def build_or_load_index(
     index_path: str,
 ) -> Tuple[faiss.Index, sqlite3.Connection]:
     print(f"[DEBUG][build_or_load_index] source='{source_path}'")
-
+    
     if os.path.exists(index_path) and os.path.exists(db_path):
         print(f"[DEBUG][build_or_load_index] Existing index + DB found, loading from disk...")
         index = faiss.read_index(index_path)
@@ -618,10 +629,6 @@ def build_context_from_retrieval(retrieved: List[Tuple[str, float]]) -> str:
     print(f"[DEBUG][build_context_from_retrieval] Context built | total chars={len(context)}")
     return context
 
-
-# ---------------------------------------------------------------------------
-# FASTAPI ENDPOINT
-# ---------------------------------------------------------------------------
 
 @app.post("/query", response_model=QueryResponse)
 async def query_files(
@@ -714,8 +721,6 @@ async def query_files(
             answers.append(rag_answer)
 
             print(f"[DEBUG][/query] Closing {len(conns)} DB connection(s)...")
-            for c in conns:
-                c.close()
             print(f"[DEBUG][/query] DB connections closed")
             print(f"[DEBUG][/query] == RAG PIPELINE END ==\n")
 
@@ -734,4 +739,4 @@ async def query_files(
 if __name__ == "__main__":
     import uvicorn
     print(f"[DEBUG][main] Starting FastAPI server on 0.0.0.0:8000")
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)  
