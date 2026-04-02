@@ -243,24 +243,6 @@ source myenv/bin/activate
 
 # 3. Install dependencies
 pip install -r requirements.txt
-```
-
-### `requirements.txt`
-
-```
-fastapi
-uvicorn[standard]
-faiss-cpu
-numpy
-ollama
-pandas
-openpyxl
-python-docx
-pymupdf
-pydantic
-python-multipart
-```
-
 ---
 
 ### Running the Server
@@ -313,14 +295,6 @@ curl -X POST http://localhost:8000/query \
 3. Add key `files` (type: File) → attach your file
 4. Add key `query` (type: Text) → type your question
 5. Hit **Send**
-
-### Response
-
-```json
-{
-  "answer": "The Avatar Creation drop-off is 35.45%."
-}
-```
 
 ---
 
