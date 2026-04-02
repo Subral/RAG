@@ -1,4 +1,4 @@
-# 🧠 SLM Data Management Tool
+# 🧠 Data Management Tool
 
 A local AI-powered document and data querying tool built with **FastAPI**, **Ollama**, and **FAISS**. Upload your files, ask questions in plain English, and get accurate, data-backed answers — all running locally on your machine with no cloud dependencies.
 
