@@ -45,8 +45,8 @@ class QueryResponse(BaseModel):
 EMBEDDING_MODEL = "qwen3-embedding:4b"
 
 LANGUAGE_MODEL = "qwen2.5-coder:7b"
-CODE_MODEL = "qwen2.5:14b"   
-NARRATE_MODEL = "qwen2.5:14b"
+CODE_MODEL = "qqwen2.5:14b"   
+NARRATE_MODEL = "qqwen2.5:14b"
 
 MAX_CHARS_PER_CHUNK = 300
 EMBED_BATCH_SIZE = 16

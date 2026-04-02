@@ -15,7 +15,7 @@ This project was built and tested on:
 | GPU       | NVIDIA RTX ADA 3500 — 12 GB VRAM |
 | OS        | Windows 11                       |
 
-The default model (`wen2.5:14b`) runs comfortably on this setup using Ollama's GPU offloading. If your hardware differs, see the [Model Selection Guide](#-model-selection-guide) below.
+The default model (`qwen2.5:14b`) runs comfortably on this setup using Ollama's GPU offloading. If your hardware differs, see the [Model Selection Guide](#-model-selection-guide) below.
 
 ---
 
@@ -220,7 +220,7 @@ Send both a CSV and a PDF together:
 
 ```bash
 ollama pull qwen3-embedding:4b
-ollama pull wen2.5:14b
+ollama pull qwen2.5:14b
 ```
 
 ---
@@ -330,7 +330,7 @@ All key settings are at the top of `app.py`:
 
 ```python
 EMBEDDING_MODEL     = "qwen3-embedding:4b"   # Ollama embedding model
-LANGUAGE_MODEL      = "wen2.5:14b"      # Ollama language model
+LANGUAGE_MODEL      = "qwen2.5:14b"      # Ollama language model
 MAX_CHARS_PER_CHUNK = 300                    # RAG chunk size (for documents)
 EMBED_BATCH_SIZE    = 16                     # Embedding batch size
 SANDBOX_TIMEOUT     = 10                     # Max seconds for pandas code execution
@@ -344,7 +344,7 @@ This tool works with **any model available in Ollama** — just change `LANGUAGE
 
 ```python
 # Examples — swap either of these to any Ollama model you have pulled
-LANGUAGE_MODEL  = "wen2.5:14b"   # change this
+LANGUAGE_MODEL  = "qwen2.5:14b"   # change this
 EMBEDDING_MODEL = "qwen3-embedding:4b" # change this
 ```
 
@@ -352,7 +352,7 @@ EMBEDDING_MODEL = "qwen3-embedding:4b" # change this
 
 | Hardware                       | Recommended Model               | Notes                                        |
 | ------------------------------ | ------------------------------- | -------------------------------------------- |
-| 12 GB VRAM (e.g. RTX ADA 3500) | `wen2.5:14b`                    | Best reasoning quality, used by this project |
+| 12 GB VRAM (e.g. RTX ADA 3500) | `qwen2.5:14b`                   | Best reasoning quality, used by this project |
 | 8 GB VRAM                      | `llama3.1:8b` or `qwen2.5:7b`   | Good balance of speed and accuracy           |
 | 4–6 GB VRAM                    | `qwen2.5:3b` or `phi3:mini`     | Lightweight, faster responses                |
 | CPU only (no GPU)              | `llama3.2:1b` or `gemma2:2b`    | Slow but functional                          |
@@ -418,11 +418,11 @@ Pull the required models first:
 
 ```bash
 ollama pull qwen3-embedding:4b
-ollama pull wen2.5:14b
+ollama pull qwen2.5:14b
 ```
 
 **Slow responses**
-`wen2.5:14b` is a large model. Switch to `llama3.1:8b` in `app.py` for faster responses on lower-end hardware.
+`qwen2.5:14b` is a large model. Switch to `llama3.1:8b` in `app.py` for faster responses on lower-end hardware.
 
 **Server running old code after edits**
 If using `reload=True`, touch the file to trigger a reload:
